@@ -9,6 +9,13 @@ TokenType :: enum {
     RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+    SEMICOLON,
+    COMMA,
+    DOT,
     EOF,
 }
 
@@ -32,6 +39,20 @@ scan_tokens :: proc(file_contents: []u8) {
                 append(&tokens, Token { type = TokenType.LEFT_BRACE, lexeme = "{" })
             case '}':
                 append(&tokens, Token { type = TokenType.RIGHT_BRACE, lexeme = "}" })
+            case '+':
+                append(&tokens, Token { type = TokenType.PLUS, lexeme = "+" })
+            case '-':
+                append(&tokens, Token { type = TokenType.MINUS, lexeme = "-" })
+            case '*':
+                append(&tokens, Token { type = TokenType.STAR, lexeme = "*" })
+            case '/':
+                append(&tokens, Token { type = TokenType.SLASH, lexeme = "/" })
+            case ';':
+                append(&tokens, Token { type = TokenType.SEMICOLON, lexeme = ";" })
+            case '.':
+                append(&tokens, Token { type = TokenType.DOT, lexeme = "." })
+            case ',':
+                append(&tokens, Token { type = TokenType.COMMA, lexeme = "," })
         }
     }
 
