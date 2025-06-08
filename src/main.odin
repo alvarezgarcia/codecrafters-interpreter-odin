@@ -28,9 +28,9 @@ main :: proc() {
     fmt.eprintln("Logs from your program will appear here!")
 
     // Uncomment this block to pass the first stage
-    // if len(file_contents) > 0 {
-    //     panic("Scanner not implemented")
-    // } else {
-    //     fmt.println("EOF  null") // Placeholder, replace this line when implementing the scanner
-    // }
+    if len(file_contents) > 0 {
+        panic("Scanner not implemented")
+    } else {
+        fmt.println("EOF  null") // Placeholder, replace this line when implementing the scanner
+    }
 }
