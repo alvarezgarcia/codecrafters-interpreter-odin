@@ -25,7 +25,7 @@ scan_tokens :: proc(file_contents: []u8) {
             case '(':
                 append(&tokens, Token { type = TokenType.LEFT_PAREN, lexeme = "(" })
             case ')':
-                append(&tokens, Token { type = TokenType.LEFT_PAREN, lexeme = ")" })
+                append(&tokens, Token { type = TokenType.RIGHT_PAREN, lexeme = ")" })
         }
     }
 
