@@ -17,12 +17,14 @@ TokenType :: enum {
     SEMICOLON,
     COMMA,
     DOT,
+    UNEXPECTED,
     EOF,
 }
 
 Token :: struct {
     type: TokenType,
-    lexeme: string
+    lexeme: string,
+    line_number: int
 }
 
 Scanner :: struct {
@@ -33,37 +35,64 @@ scanner_init :: proc(scanner: ^Scanner) {
     scanner.tokens = make([dynamic]Token)
 }
 
-scanner_tokenize :: proc(scanner: ^Scanner, file_contents: []u8)  {
+scanner_tokenize :: proc(scanner: ^Scanner, file_contents: []u8) -> bool {
     content := string(file_contents)
+    current_line_number := 1
+    lexical_errors_found := false
 
     for c in content {
+        current_token := Token {
+            line_number = current_line_number,
+        }
+
         switch c {
             case '(':
-                append(&scanner.tokens, Token { type = TokenType.LEFT_PAREN, lexeme = "(" })
+                current_token.lexeme = "("
+                current_token.type = TokenType.LEFT_PAREN
             case ')':
-                append(&scanner.tokens, Token { type = TokenType.RIGHT_PAREN, lexeme = ")" })
+                current_token.lexeme = ")"
+                current_token.type = TokenType.RIGHT_PAREN
             case '{':
-                append(&scanner.tokens, Token { type = TokenType.LEFT_BRACE, lexeme = "{" })
+                current_token.lexeme = "{"
+                current_token.type = TokenType.LEFT_BRACE
             case '}':
-                append(&scanner.tokens, Token { type = TokenType.RIGHT_BRACE, lexeme = "}" })
+                current_token.lexeme = "}"
+                current_token.type = TokenType.RIGHT_BRACE
             case '+':
-                append(&scanner.tokens, Token { type = TokenType.PLUS, lexeme = "+" })
+                current_token.lexeme = "+"
+                current_token.type = TokenType.PLUS
             case '-':
-                append(&scanner.tokens, Token { type = TokenType.MINUS, lexeme = "-" })
+                current_token.lexeme = "-"
+                current_token.type = TokenType.MINUS
             case '*':
-                append(&scanner.tokens, Token { type = TokenType.STAR, lexeme = "*" })
+                current_token.lexeme = "*"
+                current_token.type = TokenType.STAR
             case '/':
-                append(&scanner.tokens, Token { type = TokenType.SLASH, lexeme = "/" })
+                current_token.lexeme = "/"
+                current_token.type = TokenType.SLASH
             case ';':
-                append(&scanner.tokens, Token { type = TokenType.SEMICOLON, lexeme = ";" })
+                current_token.lexeme = ";"
+                current_token.type = TokenType.SEMICOLON
             case '.':
-                append(&scanner.tokens, Token { type = TokenType.DOT, lexeme = "." })
+                current_token.lexeme = "."
+                current_token.type = TokenType.DOT
             case ',':
-                append(&scanner.tokens, Token { type = TokenType.COMMA, lexeme = "," })
+                current_token.lexeme = ","
+                current_token.type = TokenType.COMMA
+            case '\n':
+                current_line_number += 1
+            case:
+                current_token.lexeme = fmt.tprintf("%c", c)
+                current_token.type = TokenType.UNEXPECTED
+                lexical_errors_found = true
         }
+
+        append(&scanner.tokens, current_token)
     }
 
-    append(&scanner.tokens, Token { type = TokenType.EOF })
+    append(&scanner.tokens, Token { type = TokenType.EOF, line_number = current_line_number })
+
+    return lexical_errors_found
 }
 
 scanner_free :: proc(scanner: ^Scanner) {
@@ -72,7 +101,11 @@ scanner_free :: proc(scanner: ^Scanner) {
 
 scanner_print :: proc(scanner: ^Scanner) {
     for token in scanner.tokens {
-        fmt.printf("%s %s null\n", token.type, token.lexeme)
+        if token.type == TokenType.UNEXPECTED {
+            fmt.fprintf(os.stderr, "[line: %d] Error: Unexpected character %s\n", token.line_number, token.lexeme)
+        } else {
+            fmt.fprintf(os.stdout, "%s %s null\n", token.type, token.lexeme)
+        }
     }
 }
 
@@ -133,6 +166,12 @@ main :: proc() {
     defer scanner_free(&scanner)
 
     scanner_init(&scanner)
-    scanner_tokenize(&scanner, file_contents)
+    errors := scanner_tokenize(&scanner, file_contents)
     scanner_print(&scanner)
+
+    if (errors) {
+        os.exit(65)
+    } else {
+        os.exit(0)
+    }
 }
