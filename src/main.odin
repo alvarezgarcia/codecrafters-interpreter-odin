@@ -7,6 +7,8 @@ import "core:strings"
 TokenType :: enum {
     LEFT_PAREN,
     RIGHT_PAREN,
+    LEFT_BRACE,
+    RIGHT_BRACE,
     EOF,
 }
 
@@ -26,6 +28,10 @@ scan_tokens :: proc(file_contents: []u8) {
                 append(&tokens, Token { type = TokenType.LEFT_PAREN, lexeme = "(" })
             case ')':
                 append(&tokens, Token { type = TokenType.RIGHT_PAREN, lexeme = ")" })
+            case '{':
+                append(&tokens, Token { type = TokenType.LEFT_BRACE, lexeme = "{" })
+            case '}':
+                append(&tokens, Token { type = TokenType.RIGHT_BRACE, lexeme = "}" })
         }
     }
 
