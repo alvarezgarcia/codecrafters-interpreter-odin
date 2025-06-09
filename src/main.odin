@@ -103,7 +103,7 @@ scanner_free :: proc(scanner: ^Scanner) {
 scanner_print :: proc(scanner: ^Scanner) {
     for token in scanner.tokens {
         if token.type == TokenType.UNEXPECTED {
-            fmt.fprintf(os.stderr, "[line: %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
+            fmt.fprintf(os.stderr, "[line %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
         } else {
             fmt.fprintf(os.stdout, "%s %s null\n", token.type, token.lexeme)
         }
@@ -154,13 +154,7 @@ main :: proc() {
     defer delete(file_contents)
 
     if !ok {
-        fmt.eprintf("Failed to read file: %s\n", filename)
-        os.exit(1)
-    }
-
-    if len(file_contents) == 0 {
-        fmt.eprintf("Empty file: %s\n", filename)
-        os.exit(-1)
+        os.exit(0)
     }
 
     scanner: Scanner;
