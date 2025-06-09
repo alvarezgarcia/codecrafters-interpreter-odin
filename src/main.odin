@@ -17,6 +17,8 @@ TokenType :: enum {
     SEMICOLON,
     COMMA,
     DOT,
+    EQUAL,
+    EQUAL_EQUAL,
     UNEXPECTED,
     EOF,
 }
@@ -40,12 +42,12 @@ scanner_tokenize :: proc(scanner: ^Scanner, file_contents: []u8) -> bool {
     current_line_number := 1
     lexical_errors_found := false
 
-    for c in content {
+    for i := 0; i < len(content); i += 1 {
         current_token := Token {
             line_number = current_line_number,
         }
 
-        switch c {
+        switch content[i] {
             case '(':
                 current_token.lexeme = "("
                 current_token.type = TokenType.LEFT_PAREN
@@ -82,8 +84,17 @@ scanner_tokenize :: proc(scanner: ^Scanner, file_contents: []u8) -> bool {
             case '\n':
                 current_line_number += 1
                 continue
+            case '=':
+                if (len(content) == 1 || content[i+1] != '=') {
+                    current_token.lexeme = "="
+                    current_token.type = TokenType.EQUAL
+                } else {
+                    current_token.lexeme = "=="
+                    current_token.type = TokenType.EQUAL_EQUAL
+                    i += 1
+                }
             case:
-                current_token.lexeme = fmt.tprintf("%c", c)
+                current_token.lexeme = fmt.tprintf("%c", content[i])
                 current_token.type = TokenType.UNEXPECTED
                 lexical_errors_found = true
         }
