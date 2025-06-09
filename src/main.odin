@@ -81,6 +81,7 @@ scanner_tokenize :: proc(scanner: ^Scanner, file_contents: []u8) -> bool {
                 current_token.type = TokenType.COMMA
             case '\n':
                 current_line_number += 1
+                continue
             case:
                 current_token.lexeme = fmt.tprintf("%c", c)
                 current_token.type = TokenType.UNEXPECTED
@@ -102,7 +103,7 @@ scanner_free :: proc(scanner: ^Scanner) {
 scanner_print :: proc(scanner: ^Scanner) {
     for token in scanner.tokens {
         if token.type == TokenType.UNEXPECTED {
-            fmt.fprintf(os.stderr, "[line: %d] Error: Unexpected character %s\n", token.line_number, token.lexeme)
+            fmt.fprintf(os.stderr, "[line: %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
         } else {
             fmt.fprintf(os.stdout, "%s %s null\n", token.type, token.lexeme)
         }
