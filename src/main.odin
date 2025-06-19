@@ -49,6 +49,10 @@ advance :: proc(scanner: ^Scanner) -> (u8, bool) {
 }
 
 peek :: proc(scanner: ^Scanner) -> u8 {
+    if (scanner.pos + 1 == len(scanner.source)) {
+        return 0
+    }
+
     return scanner.source[scanner.pos+1]
 }
 
@@ -153,9 +157,9 @@ print_tokens :: proc(tokens: []Token) {
         case TokenType.RIGHT_PAREN:
             fmt.println("RIGHT_PAREN ) null")
         case TokenType.LEFT_BRACE:
-            fmt.println("LEFT_BRACE ) null")
+            fmt.println("LEFT_BRACE { null")
         case TokenType.RIGHT_BRACE:
-            fmt.println("RIGHT_BRACE ) null")
+            fmt.println("RIGHT_BRACE } null")
         case TokenType.PLUS:
             fmt.println("PLUS + null")
         case TokenType.MINUS:
