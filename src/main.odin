@@ -19,6 +19,8 @@ TokenType :: enum {
     DOT,
     EQUAL,
     EQUAL_EQUAL,
+    BANG,
+    BANG_EQUAL,
     UNEXPECTED,
     EOF,
 }
@@ -44,6 +46,10 @@ advance :: proc(scanner: ^Scanner) -> (u8, bool) {
     }
 
     return scanner.source[scanner.pos], true
+}
+
+peek :: proc(scanner: ^Scanner) -> u8 {
+    return scanner.source[scanner.pos+1]
 }
 
 add_token :: proc{
@@ -108,7 +114,19 @@ scanner_tokenize :: proc(scanner: ^Scanner) -> bool {
         case ',':
             add_token(scanner, TokenType.COMMA)
         case '=':
-            add_token(scanner, TokenType.EQUAL)
+            if (peek(scanner) == '=') {
+                add_token(scanner, TokenType.EQUAL_EQUAL)
+                advance(scanner)
+            } else {
+                add_token(scanner, TokenType.EQUAL)
+            }
+        case '!':
+            if (peek(scanner) == '=') {
+                add_token(scanner, TokenType.BANG_EQUAL)
+                advance(scanner)
+            } else {
+                add_token(scanner, TokenType.BANG)
+            }
         case '\n':
             scanner.line_number += 1
             continue
@@ -154,8 +172,12 @@ print_tokens :: proc(tokens: []Token) {
             fmt.println("COMMA , null")
         case TokenType.EQUAL:
             fmt.println("EQUAL = null")
+        case TokenType.BANG:
+            fmt.println("BANG ! null")
+        case TokenType.BANG_EQUAL:
+            fmt.println("BANG_EQUAL != null")
         case TokenType.EQUAL_EQUAL:
-            fmt.println("EQUAL_EQUAL = null")
+            fmt.println("EQUAL_EQUAL == null")
         case TokenType.UNEXPECTED:
            fmt.fprintf(os.stderr, "[line %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
         case TokenType.EOF:
@@ -215,10 +237,10 @@ main :: proc() {
     // defer scanner_free(&scanner)
 
     scanner_init(&scanner, file_contents[:])
-    errors := scanner_tokenize(&scanner)
+    error := scanner_tokenize(&scanner)
     print_tokens(scanner.tokens[:])
 
-    if (errors) {
+    if (error) {
         os.exit(65)
     } else {
         os.exit(0)
