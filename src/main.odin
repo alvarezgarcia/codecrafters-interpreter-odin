@@ -201,13 +201,13 @@ print_tokens :: proc(tokens: []Token) {
         case TokenType.EQUAL_EQUAL:
             fmt.println("EQUAL_EQUAL == null")
         case TokenType.LESS:
-            fmt.println("LESS == null")
+            fmt.println("LESS < null")
         case TokenType.LESS_EQUAL:
-            fmt.println("LESS_EQUAL == null")
+            fmt.println("LESS_EQUAL <= null")
         case TokenType.GREATER:
-            fmt.println("GREATER == null")
+            fmt.println("GREATER > null")
         case TokenType.GREATER_EQUAL:
-            fmt.println("GREATER_EQUAL == null")
+            fmt.println("GREATER_EQUAL >= null")
         case TokenType.UNEXPECTED:
            fmt.fprintf(os.stderr, "[line %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
         case TokenType.EOF:
