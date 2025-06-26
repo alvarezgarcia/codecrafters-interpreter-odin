@@ -113,14 +113,20 @@ scanner_tokenize :: proc(scanner: ^Scanner) -> bool {
             add_token(scanner, TokenType.MINUS)
         case '*':
             add_token(scanner, TokenType.STAR)
-        case '/':
-            add_token(scanner, TokenType.SLASH)
         case ';':
             add_token(scanner, TokenType.SEMICOLON)
         case '.':
             add_token(scanner, TokenType.DOT)
         case ',':
             add_token(scanner, TokenType.COMMA)
+        case '/':
+            if (peek(scanner) == '/') {
+                for peek(scanner) != '\n' {
+                    advance(scanner)
+                }
+            } else {
+                add_token(scanner, TokenType.SLASH)
+            }
         case '=':
             if (peek(scanner) == '=') {
                 add_token(scanner, TokenType.EQUAL_EQUAL)
