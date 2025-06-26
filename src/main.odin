@@ -44,6 +44,10 @@ Scanner :: struct {
 }
 
 advance :: proc(scanner: ^Scanner) -> (u8, bool) {
+    if (scanner.pos == len(scanner.source)) {
+        return 0, false
+    }
+
     scanner.pos += 1
     if (scanner.pos == len(scanner.source)) {
         return 0, false
@@ -122,7 +126,10 @@ scanner_tokenize :: proc(scanner: ^Scanner) -> bool {
         case '/':
             if (peek(scanner) == '/') {
                 for peek(scanner) != '\n' {
-                    advance(scanner)
+                    char, ok := advance(scanner)
+                    if !ok {
+                        break
+                    }
                 }
             } else {
                 add_token(scanner, TokenType.SLASH)
