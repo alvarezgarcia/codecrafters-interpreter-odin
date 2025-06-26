@@ -44,15 +44,11 @@ Scanner :: struct {
 }
 
 advance :: proc(scanner: ^Scanner) -> (u8, bool) {
-    if (scanner.pos == len(scanner.source)) {
+    if (scanner.pos + 1 == len(scanner.source)) {
         return 0, false
     }
 
     scanner.pos += 1
-    if (scanner.pos == len(scanner.source)) {
-        return 0, false
-    }
-
     return scanner.source[scanner.pos], true
 }
 
@@ -165,6 +161,7 @@ scanner_tokenize :: proc(scanner: ^Scanner) -> bool {
         case '\n':
             scanner.line_number += 1
             continue
+        case ' ', '\t':
         case:
             scanner.error = true
             add_token(scanner, TokenType.UNEXPECTED, fmt.tprintf("%c", char))
