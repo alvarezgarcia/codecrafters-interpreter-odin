@@ -25,13 +25,15 @@ TokenType :: enum {
     LESS_EQUAL,
     GREATER,
     GREATER_EQUAL,
-    UNEXPECTED,
+    STRING,
     EOF,
+    ERROR_UNEXPECTED_CHAR,
+    ERROR_UNTERMINATED_STRING
 }
 
 Token :: struct {
     type: TokenType,
-    lexeme: string,
+    lexeme: []u8,
     line_number: int
 }
 
@@ -41,6 +43,22 @@ Scanner :: struct {
     pos: int,
     line_number: int,
     error: bool
+}
+
+capture_string :: proc(scanner: ^Scanner) -> bool {
+    start_pos := scanner.pos + 1 // The next character after the opening "
+
+    for peek(scanner) != '"' {
+        char, ok := advance(scanner)
+        if !ok {
+            return false
+        }
+    }
+    end_pos := scanner.pos + 1
+
+    advance(scanner)
+    add_token(scanner, TokenType.STRING, scanner.source[start_pos:end_pos])
+    return true
 }
 
 advance :: proc(scanner: ^Scanner) -> (u8, bool) {
@@ -65,7 +83,7 @@ add_token :: proc{
     add_token_with_lexeme
 }
 
-add_token_with_lexeme :: proc(scanner: ^Scanner, type: TokenType, lexeme: string) {
+add_token_with_lexeme :: proc(scanner: ^Scanner, type: TokenType, lexeme: []u8) {
     current_token := Token {
         line_number = scanner.line_number,
         type = type,
@@ -161,10 +179,15 @@ scanner_tokenize :: proc(scanner: ^Scanner) -> bool {
         case '\n':
             scanner.line_number += 1
             continue
+        case '"':
+            if (capture_string(scanner) == false) {
+                scanner.error = true
+                add_token(scanner, TokenType.ERROR_UNTERMINATED_STRING)
+            }
         case ' ', '\t':
         case:
             scanner.error = true
-            add_token(scanner, TokenType.UNEXPECTED, fmt.tprintf("%c", char))
+            add_token(scanner, TokenType.ERROR_UNEXPECTED_CHAR, scanner.source[scanner.pos:scanner.pos+1])
         }
     }
 
@@ -218,12 +241,17 @@ print_tokens :: proc(tokens: []Token) {
             fmt.println("GREATER > null")
         case TokenType.GREATER_EQUAL:
             fmt.println("GREATER_EQUAL >= null")
-        case TokenType.UNEXPECTED:
-           fmt.fprintf(os.stderr, "[line %d] Error: Unexpected character: %s\n", token.line_number, token.lexeme)
+        case TokenType.STRING:
+            lexeme_s := string(token.lexeme)
+            fmt.printf("STRING \"%s\" %s\n", lexeme_s, lexeme_s)
+        case TokenType.ERROR_UNEXPECTED_CHAR:
+           fmt.fprintf(os.stderr, "[line %d] Error: Unexpected character: %s\n", token.line_number, string(token.lexeme))
+        case TokenType.ERROR_UNTERMINATED_STRING:
+           fmt.fprintf(os.stderr, "[line %d] Error: Unterminated string.\n", token.line_number)
         case TokenType.EOF:
             fmt.println("EOF  null")
+        }
     }
-}
 }
 
 init_track_mem_allocator :: proc(track: ^mem.Tracking_Allocator) {
